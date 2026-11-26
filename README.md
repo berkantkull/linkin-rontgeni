@@ -1,5 +1,7 @@
 # Linkin Röntgeni
 
+[Canlı demoyu aç](https://berkantkull.github.io/linkin-rontgeni/)
+
 Bir URL yapıştır, bilinen takip parametrelerini gör ve temiz bağlantıyı kopyala. Araç bağlantıları tarayıcında işler. Kurulum ve sunucu gerektirmez.
 
 ## Çalıştırma
