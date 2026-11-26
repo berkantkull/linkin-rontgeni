@@ -4,100 +4,239 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Paylaşmadan önce bağlantındaki takip parametrelerini gör ve temizle.">
-  <meta name="theme-color" content="#101714">
+  <meta name="theme-color" content="#f6f7fa">
   <title>Linkin Röntgeni</title>
   <style>
     :root {
-      color-scheme: dark;
-      --bg: #101714;
-      --panel: #18221d;
-      --border: #35443a;
-      --text: #f0f6ee;
-      --muted: #afc1b4;
-      --mint: #b9f68b;
-      --dark: #14200e;
-      --warning: #ffb6a4;
-      font: 100%/1.6 system-ui, sans-serif;
+      color-scheme: light;
+      --canvas: #f6f7fa;
+      --surface: #fff;
+      --quiet: #f1f3f7;
+      --line: #d8dce5;
+      --control-line: #8d96a7;
+      --ink: #161c2c;
+      --muted: #535d70;
+      --accent: #234cca;
+      --accent-hover: #1a3baa;
+      --accent-soft: #eaf0ff;
+      --error: #a52825;
+      --success: #176043;
+      --mono: ui-monospace, "SFMono-Regular", Consolas, monospace;
+      font: 100%/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
     }
+
     * { box-sizing: border-box; }
     body {
       margin: 0;
-      background: radial-gradient(ellipse at 80% 0%, #213628 0%, transparent 55%), var(--bg);
+      display: flex;
+      flex-direction: column;
       min-height: 100vh;
-      color: var(--text);
+      background: var(--canvas);
+      color: var(--ink);
     }
-    main { width: min(100% - 2rem, 45rem); margin: auto; padding: clamp(2.5rem, 8vw, 6rem) 0 2rem; }
-    header { margin-bottom: 2rem; }
-    h1, h2, p { margin: 0; }
-    h1 { font-size: clamp(2.5rem, 8vw, 4.7rem); line-height: 1; letter-spacing: -.075em; }
-    header p { max-width: 31rem; margin-top: 1rem; color: var(--muted); }
-    section, form { padding: clamp(1rem, 4vw, 1.7rem); border: 1px solid var(--border); border-radius: 1rem; background: var(--panel); }
-    section { margin-top: 1rem; }
-    label { display: block; font-weight: 650; margin-bottom: .45rem; }
+
+    h1, p { margin: 0; }
+    a { color: var(--accent); text-underline-offset: .19em; }
+    .shell { width: min(100% - 3rem, 64rem); margin-inline: auto; }
+    .site-header { background: var(--surface); border-bottom: 1px solid var(--line); }
+    .site-header .shell, .site-footer .shell {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: .65rem 1.25rem;
+      padding-block: 1rem;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: .6rem;
+      font-size: .95rem;
+      font-weight: 700;
+    }
+
+    .brand-icon {
+      position: relative;
+      width: 1.8rem;
+      height: 1.8rem;
+      border-radius: .4rem;
+      background: var(--accent);
+    }
+
+    .brand-icon::before, .brand-icon::after {
+      content: "";
+      position: absolute;
+      top: .64rem;
+      width: .73rem;
+      height: .42rem;
+      border: 2px solid #fff;
+      border-radius: .3rem;
+      transform: rotate(-40deg);
+    }
+
+    .brand-icon::before { left: .24rem; top: .82rem; }
+    .brand-icon::after { right: .24rem; top: .55rem; }
+    .nav-link, .site-footer a { color: var(--muted); font-weight: 600; }
+    .nav-link { font-size: .9rem; }
+    .nav-link:hover, .site-footer a:hover { color: var(--accent); }
+    main { flex: 1; padding-block: clamp(2.6rem, 7vw, 5.5rem) 3rem; }
+    .intro { margin-bottom: clamp(1.6rem, 4vw, 2.65rem); }
+    h1 {
+      font-size: clamp(2.25rem, 6.5vw, 4.25rem);
+      line-height: 1.06;
+      letter-spacing: -.043em;
+      font-weight: 700;
+    }
+    .intro p { margin-top: .85rem; max-width: 35rem; color: var(--muted); font-size: clamp(1rem, 2.5vw, 1.2rem); }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      border: 1px solid var(--line);
+      border-radius: .75rem;
+      background: var(--surface);
+      box-shadow: 0 2px 4px #16203908;
+    }
+
+    .pane { min-width: 0; padding: clamp(1.15rem, 3.5vw, 2rem); }
+    .pane + .pane { border-inline-start: 1px solid var(--line); }
+    label { display: block; margin-bottom: .55rem; font-weight: 650; }
     input, textarea {
       display: block;
       width: 100%;
-      padding: .75rem;
-      color: var(--text);
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: .5rem;
-      font: 0.95rem/1.55 ui-monospace, Consolas, monospace;
+      padding: .78rem .85rem;
+      min-height: 3.75rem;
+      color: var(--ink);
+      background: var(--surface);
+      border: 1px solid var(--control-line);
+      border-radius: .4rem;
+      font: 1rem/1.35 var(--mono);
     }
-    textarea { resize: vertical; }
+
+    input::placeholder, textarea::placeholder { color: var(--muted); opacity: 1; }
+    input[aria-invalid="true"] { border-color: var(--error); }
+    textarea { height: 3.75rem; resize: vertical; overflow-wrap: anywhere; }
+    textarea[data-empty] { background: var(--quiet); border-color: var(--line); }
+    textarea::placeholder { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+    .actions { display: flex; flex-wrap: wrap; align-items: center; gap: .55rem .75rem; margin-top: .85rem; }
+
     button {
-      padding: .6rem .95rem;
+      min-height: 2.75rem;
+      padding: .55rem .95rem;
       font: inherit;
+      font-size: .95rem;
       font-weight: 650;
       cursor: pointer;
-      border: 1px solid var(--mint);
-      border-radius: .5rem;
-      background: var(--mint);
-      color: var(--dark);
+      border: 1px solid transparent;
+      border-radius: .4rem;
+      background: var(--accent);
+      color: #fff;
     }
-    button:hover { filter: brightness(1.12); }
-    button.secondary { background: transparent; border-color: var(--border); color: var(--text); }
-    :focus-visible { outline: 2px solid var(--mint); outline-offset: 3px; }
-    .row { display: flex; flex-wrap: wrap; align-items: center; gap: .65rem; margin-top: .8rem; }
-    .error { color: var(--warning); margin-top: .75rem; }
-    .muted, footer, .status { color: var(--muted); font-size: .9rem; }
-    h2 { font-size: 1.05rem; }
-    #summary { margin: .2rem 0 .75rem; }
-    ul { padding: 0; margin: 0 0 1rem; display: flex; flex-wrap: wrap; gap: .4rem; list-style: none; }
-    li { padding: .12rem .5rem; border: 1px solid var(--border); border-radius: .35rem; color: var(--mint); overflow-wrap: anywhere; min-width: 0; }
-    [hidden] { display: none !important; }
-    footer { margin-top: 1rem; }
+
+    button:hover:not(:disabled) { background: var(--accent-hover); }
+    button.secondary { background: var(--surface); color: var(--ink); border-color: var(--control-line); }
+    button.secondary:hover:not(:disabled) { background: var(--quiet); }
+    button:disabled { background: var(--quiet); color: var(--muted); border-color: var(--line); cursor: default; }
+    :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+    .feedback, .error, .status, .tool-notes, .site-footer { font-size: .9rem; }
+    .error { color: var(--error); margin-top: .65rem; }
+    .status { color: var(--success); }
+    .feedback { color: var(--muted); }
+    #summary:not(:empty) { margin-top: .8rem; }
+    #removed {
+      padding: 0;
+      margin: .55rem 0 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: .35rem;
+      list-style: none;
+    }
+    #removed li {
+      padding: .22rem .43rem;
+      min-width: 0;
+      max-width: 100%;
+      border-radius: .28rem;
+      background: var(--accent-soft);
+      color: #223b79;
+      font: .86rem/1.35 var(--mono);
+      overflow-wrap: anywhere;
+    }
+
+    .tool-notes { margin-top: 1rem; color: var(--muted); }
+    .tool-notes details { margin-top: .5rem; }
+    .tool-notes summary {
+      width: fit-content;
+      color: var(--ink);
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .tool-notes details p { margin-top: .45rem; max-width: 42rem; }
+    code { font-family: var(--mono); }
+    .site-footer { border-top: 1px solid var(--line); color: var(--muted); }
+    #removed[hidden], [hidden] { display: none; }
+
+    @media (max-width: 42rem) {
+      .shell { width: calc(100% - 2rem); }
+      .workspace { grid-template-columns: minmax(0, 1fr); }
+      .pane + .pane { border-inline-start: 0; border-top: 1px solid var(--line); }
+    }
   </style>
 </head>
 <body>
-  <main>
-    <header>
+  <header class="site-header">
+    <div class="shell">
+      <span class="brand"><span class="brand-icon" aria-hidden="true"></span>Stark Bilişim</span>
+      <a class="nav-link" href="https://github.com/berkantkull/linkin-rontgeni">GitHub</a>
+    </div>
+  </header>
+  <main class="shell">
+    <header class="intro">
       <h1>Linkin Röntgeni</h1>
-      <p>Paylaşmadan önce bağlantındaki takip parametrelerini gör, temizle ve kopyala.</p>
+      <p>Paylaşacağın bağlantıdaki takip parametrelerini gör, kaldır ve temiz bağlantıyı kopyala.</p>
     </header>
-    <form id="scan" novalidate>
-      <label for="source">Bağlantı</label>
-      <input id="source" type="url" inputmode="url" autocomplete="off" spellcheck="false"
-        placeholder="https://ornek.com/yazi?utm_source=bulten" aria-describedby="error">
-      <div class="row">
-        <button type="submit">Bağlantıyı incele</button>
-        <button type="button" class="secondary" id="example">Örnek dene</button>
+
+    <div class="workspace">
+      <form class="pane" id="scan" novalidate>
+        <label for="source">Orijinal bağlantı</label>
+        <input id="source" type="url" inputmode="url" autocomplete="off" autocapitalize="none" spellcheck="false"
+          placeholder="https://ornek.com/…" aria-describedby="error">
+        <div class="actions">
+          <button type="submit">Bağlantıyı temizle</button>
+          <button type="button" class="secondary" id="example">Örnek dene</button>
+        </div>
+        <p class="error" id="error" role="alert" hidden></p>
+      </form>
+
+      <div class="pane">
+        <label for="clean">Temiz bağlantı</label>
+        <textarea id="clean" rows="2" readonly tabindex="-1" data-empty spellcheck="false"
+          placeholder="Sonuç burada görünecek."></textarea>
+        <div class="actions">
+          <button id="copy" type="button" class="secondary" disabled>Bağlantıyı kopyala</button>
+          <span id="copy-status" class="status" role="status"></span>
+        </div>
+        <div class="feedback">
+          <p id="summary" role="status"></p>
+          <ul id="removed" aria-label="Kaldırılan takip parametreleri" hidden></ul>
+        </div>
       </div>
-      <p class="error" id="error" role="alert" hidden></p>
-    </form>
-    <section id="result" aria-labelledby="result-heading" hidden>
-      <h2 id="result-heading">İnceleme sonucu</h2>
-      <p class="muted" id="summary" aria-live="polite"></p>
-      <ul id="removed" aria-label="Kaldırılan takip parametreleri" hidden></ul>
-      <label for="clean">Paylaşılacak bağlantı</label>
-      <textarea id="clean" rows="2" readonly spellcheck="false"></textarea>
-      <div class="row">
-        <button id="copy" type="button">Kopyala</button>
-        <span id="copy-status" class="status" role="status"></span>
-      </div>
-    </section>
-    <footer>Bağlantılar tarayıcında işlenir ve hiçbir sunucuya gönderilmez.</footer>
+    </div>
+
+    <div class="tool-notes">
+      <p>Bağlantılar yalnızca tarayıcında işlenir.</p>
+      <details>
+        <summary>Hangi parametreler kaldırılır?</summary>
+        <p><code>utm_*</code>, <code>fbclid</code> ve <code>gclid</code> gibi bilinen takip parametreleri kaldırılır. Diğer parametreler ve <code>#</code> ile başlayan bölüm bağlantısı korunur.</p>
+      </details>
+    </div>
   </main>
+  <footer class="site-footer">
+    <div class="shell">
+      <p>© 2026 Berkant Kul / Stark Bilişim</p>
+      <a href="https://github.com/berkantkull/linkin-rontgeni/blob/main/LICENSE">MIT Lisansı</a>
+    </div>
+  </footer>
   <script>
     const trackingKeys = new Set([
       'fbclid', 'gclid', 'dclid', 'gbraid', 'wbraid', 'msclkid',
@@ -134,17 +273,23 @@
     const form = document.querySelector('#scan');
     const source = document.querySelector('#source');
     const error = document.querySelector('#error');
-    const result = document.querySelector('#result');
     const summary = document.querySelector('#summary');
     const removedList = document.querySelector('#removed');
     const clean = document.querySelector('#clean');
+    const copyButton = document.querySelector('#copy');
     const copyStatus = document.querySelector('#copy-status');
 
     function clearResult() {
-      result.hidden = true;
       error.hidden = true;
       source.removeAttribute('aria-invalid');
+      clean.value = '';
+      clean.setAttribute('data-empty', '');
+      clean.tabIndex = -1;
+      copyButton.disabled = true;
       copyStatus.textContent = '';
+      summary.textContent = '';
+      removedList.hidden = true;
+      removedList.replaceChildren();
     }
 
     form.addEventListener('submit', event => {
@@ -163,13 +308,17 @@
 
       const { removed } = scan;
       clean.value = scan.clean;
-      removedList.replaceChildren(...removed.map(key => {
+      clean.removeAttribute('data-empty');
+      clean.tabIndex = 0;
+      copyButton.disabled = false;
+      const items = document.createDocumentFragment();
+      for (const key of new Set(removed)) {
         const item = document.createElement('li');
         item.textContent = key;
-        return item;
-      }));
+        items.append(item);
+      }
+      removedList.replaceChildren(items);
       removedList.hidden = removed.length === 0;
-      result.hidden = false;
       summary.textContent = removed.length
         ? removed.length + ' takip parametresi kaldırıldı.'
         : 'Bilinen takip parametresi bulunamadı.';
@@ -181,11 +330,13 @@
       form.requestSubmit();
     });
 
-    document.querySelector('#copy').addEventListener('click', async () => {
+    copyButton.addEventListener('click', async () => {
+      const value = clean.value;
       try {
-        await navigator.clipboard.writeText(clean.value);
-        copyStatus.textContent = 'Kopyalandı.';
+        await navigator.clipboard.writeText(value);
+        if (clean.value === value) copyStatus.textContent = 'Kopyalandı.';
       } catch {
+        if (clean.value !== value) return;
         clean.focus();
         clean.select();
         copyStatus.textContent = 'Bağlantı seçildi. Ctrl+C veya ⌘C ile kopyala.';

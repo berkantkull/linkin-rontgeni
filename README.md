@@ -16,3 +16,7 @@ GitHub Pages için dosyaları deponun köküne koy. GitHub'da **Settings → Pag
 - Çıktı: `https://example.com/yazi?dil=tr#kaynaklar`
 
 Araç bilinen takip parametrelerini ve `utm_*` anahtarlarını kaldırır. Diğer parametrelerin sırasını ve kodlamasını, ayrıca `#` ile başlayan bölümü korur. Bir bağlantının imzası sorgu parametrelerini kapsıyorsa değişiklik imzayı geçersiz kılabilir. Tanınan anahtarlar `index.html` içindeki `trackingKeys` listesinde tutulur.
+
+## Lisans
+
+© 2026 Berkant Kul / Stark Bilişim. Proje [MIT Lisansı](LICENSE) ile yayımlanır.
