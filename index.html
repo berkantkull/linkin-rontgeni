@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Paylaşmadan önce bağlantındaki takip parametrelerini gör ve temizle.">
+  <meta name="theme-color" content="#101714">
+  <title>Linkin Röntgeni</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #101714;
+      --panel: #18221d;
+      --border: #35443a;
+      --text: #f0f6ee;
+      --muted: #afc1b4;
+      --mint: #b9f68b;
+      --dark: #14200e;
+      --warning: #ffb6a4;
+      font: 100%/1.6 system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: radial-gradient(ellipse at 80% 0%, #213628 0%, transparent 55%), var(--bg);
+      min-height: 100vh;
+      color: var(--text);
+    }
+    main { width: min(100% - 2rem, 45rem); margin: auto; padding: clamp(2.5rem, 8vw, 6rem) 0 2rem; }
+    header { margin-bottom: 2rem; }
+    h1, h2, p { margin: 0; }
+    h1 { font-size: clamp(2.5rem, 8vw, 4.7rem); line-height: 1; letter-spacing: -.075em; }
+    header p { max-width: 31rem; margin-top: 1rem; color: var(--muted); }
+    section, form { padding: clamp(1rem, 4vw, 1.7rem); border: 1px solid var(--border); border-radius: 1rem; background: var(--panel); }
+    section { margin-top: 1rem; }
+    label { display: block; font-weight: 650; margin-bottom: .45rem; }
+    input, textarea {
+      display: block;
+      width: 100%;
+      padding: .75rem;
+      color: var(--text);
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: .5rem;
+      font: 0.95rem/1.55 ui-monospace, Consolas, monospace;
+    }
+    textarea { resize: vertical; }
+    button {
+      padding: .6rem .95rem;
+      font: inherit;
+      font-weight: 650;
+      cursor: pointer;
+      border: 1px solid var(--mint);
+      border-radius: .5rem;
+      background: var(--mint);
+      color: var(--dark);
+    }
+    button:hover { filter: brightness(1.12); }
+    button.secondary { background: transparent; border-color: var(--border); color: var(--text); }
+    :focus-visible { outline: 2px solid var(--mint); outline-offset: 3px; }
+    .row { display: flex; flex-wrap: wrap; align-items: center; gap: .65rem; margin-top: .8rem; }
+    .error { color: var(--warning); margin-top: .75rem; }
+    .muted, footer, .status { color: var(--muted); font-size: .9rem; }
+    h2 { font-size: 1.05rem; }
+    #summary { margin: .2rem 0 .75rem; }
+    ul { padding: 0; margin: 0 0 1rem; display: flex; flex-wrap: wrap; gap: .4rem; list-style: none; }
+    li { padding: .12rem .5rem; border: 1px solid var(--border); border-radius: .35rem; color: var(--mint); overflow-wrap: anywhere; min-width: 0; }
+    [hidden] { display: none !important; }
+    footer { margin-top: 1rem; }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>Linkin Röntgeni</h1>
+      <p>Paylaşmadan önce bağlantındaki takip parametrelerini gör, temizle ve kopyala.</p>
+    </header>
+    <form id="scan" novalidate>
+      <label for="source">Bağlantı</label>
+      <input id="source" type="url" inputmode="url" autocomplete="off" spellcheck="false"
+        placeholder="https://ornek.com/yazi?utm_source=bulten" aria-describedby="error">
+      <div class="row">
+        <button type="submit">Bağlantıyı incele</button>
+        <button type="button" class="secondary" id="example">Örnek dene</button>
+      </div>
+      <p class="error" id="error" role="alert" hidden></p>
+    </form>
+    <section id="result" aria-labelledby="result-heading" hidden>
+      <h2 id="result-heading">İnceleme sonucu</h2>
+      <p class="muted" id="summary" aria-live="polite"></p>
+      <ul id="removed" aria-label="Kaldırılan takip parametreleri" hidden></ul>
+      <label for="clean">Paylaşılacak bağlantı</label>
+      <textarea id="clean" rows="2" readonly spellcheck="false"></textarea>
+      <div class="row">
+        <button id="copy" type="button">Kopyala</button>
+        <span id="copy-status" class="status" role="status"></span>
+      </div>
+    </section>
+    <footer>Bağlantılar tarayıcında işlenir ve hiçbir sunucuya gönderilmez.</footer>
+  </main>
+  <script>
+    const trackingKeys = new Set([
+      'fbclid', 'gclid', 'dclid', 'gbraid', 'wbraid', 'msclkid',
+      'ttclid', 'twclid', 'igshid', 'mc_cid', 'mc_eid', '_ga', '_gl'
+    ]);
+
+    function inspectLink(input) {
+      const original = input.trim();
+      if (!/^https?:\/\/[^/?#\\\s]/i.test(original)) throw new Error('Geçersiz adres');
+      const address = new URL(original);
+      if (!address.hostname || /[\u0000-\u0020\u007f]/.test(original)) throw new Error('Geçersiz adres');
+
+      const hashStart = original.indexOf('#');
+      const beforeHash = hashStart < 0 ? original : original.slice(0, hashStart);
+      const hash = hashStart < 0 ? '' : original.slice(hashStart);
+      const queryStart = beforeHash.indexOf('?');
+      const removed = [];
+      if (queryStart < 0) return { clean: original, removed };
+
+      const kept = beforeHash.slice(queryStart + 1).split('&').filter(part => {
+        // Decode only the key. Keep the raw encoding and order of every retained entry.
+        const [key] = new URLSearchParams('key=' + part.split('=', 1)[0]).values();
+        const normalized = key.toLowerCase();
+        if (!normalized.startsWith('utm_') && !trackingKeys.has(normalized)) return true;
+        removed.push(key);
+        return false;
+      });
+
+      if (!removed.length) return { clean: original, removed };
+      const query = kept.some(Boolean) ? '?' + kept.join('&') : '';
+      return { clean: beforeHash.slice(0, queryStart) + query + hash, removed };
+    }
+
+    const form = document.querySelector('#scan');
+    const source = document.querySelector('#source');
+    const error = document.querySelector('#error');
+    const result = document.querySelector('#result');
+    const summary = document.querySelector('#summary');
+    const removedList = document.querySelector('#removed');
+    const clean = document.querySelector('#clean');
+    const copyStatus = document.querySelector('#copy-status');
+
+    function clearResult() {
+      result.hidden = true;
+      error.hidden = true;
+      source.removeAttribute('aria-invalid');
+      copyStatus.textContent = '';
+    }
+
+    form.addEventListener('submit', event => {
+      event.preventDefault();
+      clearResult();
+      let scan;
+      try {
+        scan = inspectLink(source.value);
+      } catch {
+        error.textContent = 'http:// veya https:// ile başlayan geçerli bir bağlantı gir.';
+        error.hidden = false;
+        source.setAttribute('aria-invalid', 'true');
+        source.focus();
+        return;
+      }
+
+      const { removed } = scan;
+      clean.value = scan.clean;
+      removedList.replaceChildren(...removed.map(key => {
+        const item = document.createElement('li');
+        item.textContent = key;
+        return item;
+      }));
+      removedList.hidden = removed.length === 0;
+      result.hidden = false;
+      summary.textContent = removed.length
+        ? removed.length + ' takip parametresi kaldırıldı.'
+        : 'Bilinen takip parametresi bulunamadı.';
+    });
+
+    source.addEventListener('input', clearResult);
+    document.querySelector('#example').addEventListener('click', () => {
+      source.value = 'https://example.com/yazi?dil=tr&utm_source=bulten&fbclid=ornek#kaynaklar';
+      form.requestSubmit();
+    });
+
+    document.querySelector('#copy').addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(clean.value);
+        copyStatus.textContent = 'Kopyalandı.';
+      } catch {
+        clean.focus();
+        clean.select();
+        copyStatus.textContent = 'Bağlantı seçildi. Ctrl+C veya ⌘C ile kopyala.';
+      }
+    });
+  </script>
+</body>
+</html>
