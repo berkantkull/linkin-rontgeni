@@ -6,7 +6,7 @@
   <meta name="description" content="Paylaşmadan önce bağlantındaki takip parametrelerini gör ve temizle.">
   <meta name="theme-color" content="#f6f7fa">
   <title>Linkin Röntgeni</title>
-  <link rel="icon" type="image/svg+xml" href="./icon.svg?v=2">
+  <link rel="icon" type="image/svg+xml" href="./icon.svg?v=3">
   <style>
     :root {
       color-scheme: light;
@@ -29,9 +29,6 @@
     * { box-sizing: border-box; }
     body {
       margin: 0;
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
       background: var(--canvas);
       color: var(--ink);
     }
@@ -62,14 +59,14 @@
     .brand:hover { color: var(--accent); text-decoration: underline; }
     .brand-icon {
       display: block;
-      width: 2rem;
-      height: 2rem;
+      width: 2.5rem;
+      height: 2.5rem;
     }
 
     .nav-link, .site-footer a { color: var(--muted); font-weight: 600; }
     .nav-link { font-size: .9rem; }
     .nav-link:hover, .site-footer a:hover { color: var(--accent); }
-    main { flex: 1; padding-block: clamp(2.6rem, 7vw, 5.5rem) 3rem; }
+    main { padding-block: clamp(2rem, 5vh, 4rem) 1.5rem; }
     .intro { margin-bottom: clamp(1.6rem, 4vw, 2.65rem); }
     h1 {
       font-size: clamp(2.25rem, 6.5vw, 4.25rem);
@@ -176,7 +173,7 @@
   <header class="site-header">
     <div class="shell">
       <a class="brand" href="https://starkbilisim.com/">
-        <img class="brand-icon" src="./icon.svg?v=2" width="32" height="32" alt="">
+        <img class="brand-icon" src="./icon.svg?v=3" width="40" height="40" alt="">
         Stark Bilişim
       </a>
       <a class="nav-link" href="https://github.com/berkantkull/linkin-rontgeni">GitHub</a>
